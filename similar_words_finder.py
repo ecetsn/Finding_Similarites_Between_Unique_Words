@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 import string
 import time
@@ -12,7 +11,7 @@ import re
 punctuation_to_remove = '"!.,“”;[]():﻿«»…#*―_<>%...  =—§ʿ–'
 
 # Common word parts that should be considered as part of the root word
-# and not treated as separate words
+# and not treated as separate words, can be updated as needed
 appendices = ['dan', 'den', 'dir', 'dir', 'inin', 'nde', 'nden', 'nin', 'nun', 'nın', 'tan', 'ten', 'daki']
 
 # check if a word contains any digit
@@ -25,12 +24,12 @@ def apostrophe(word):
     if len(word) > 0 and word[0] in {'ʻ', '‘', '’', '–', '?', 'ʿ', '–', ' '}:
         word = word[1:]
         return apostrophe(word)
-    if len(word) > 0 and word[-1] in {'ʻ', '‘', '’', '?', ' ', '–'}:
+    if len(word) > 0 and word[-1] in {'ʻ', '‘', '’', '–', '?', 'ʿ', '–', ' '}:
         word = word[0:-1]
         return apostrophe(word)
     return word
 
-# standartise Unicode characters and handle Turkish characters
+# standartise Unicode characters and handle Turkish characters in different unicodes, needs to be monitored
 def preprocess_line(line):
     line = line.lower().replace("-", " ")
     line = line.lower().replace(".", " ")
@@ -59,10 +58,10 @@ def preprocess_text(text):
                     word = word.translate(str.maketrans('', '', punctuation_to_remove))
                     word = word.split("'")[0]
                     word = apostrophe(word)
-                    if not has_digit(word) and len(word) > 3 and word != "discard" and word != "disccard" and word not in appendices and '?' not in word:
+                    if not has_digit(word) and len(word) > 3  and word not in appendices and '?' not in word:
                         #word = str(len(word)) + " -> " + word 
                         words.add(word)
-                    elif '?' in word and not has_digit(word) and len(word) > 3 and word != "discard" and word != "disccard" and word not in appendices:
+                    elif '?' in word and not has_digit(word) and len(word) > 3 and  word not in appendices:
                         exceptions.add(word)
 
     return sorted(words, key=len)
@@ -102,7 +101,6 @@ start_time = time.time()
 
 # Read the docx file and extract unique words
 doc = Document('unique_words.docx') # take filename as main argument later
-#doc = Document('Sample_Doc.docx')
 
 for paragraph in doc.paragraphs:
     if not is_bold(paragraph):
@@ -124,7 +122,6 @@ output_file = 'result_of_exceptions.txt'
 with open(output_file, 'w', encoding='utf-8') as file:
     file.write(df_exception.to_string())
 
-
 print("Code is running to find the similar words for ", len(unique_words) , " unique words.")
 
 # Find similar words for each unique word and save to a DataFrame
@@ -132,7 +129,8 @@ similar_words_dict = defaultdict(list)
 for word in unique_words:
     similar_words = find_most_similar_words(word, unique_words)
     similar_words_dict[word] = similar_words
-
+    
+# using panda to visualize
 df = pd.DataFrame(similar_words_dict.items(), columns=['Word', 'Similar Words'])
 df = df.sort_values(by='Word')
 
