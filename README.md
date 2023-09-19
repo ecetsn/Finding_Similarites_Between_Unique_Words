@@ -46,8 +46,3 @@ The script generates the following output files: <br />
 
 ### Benchmark
 The script provides a benchmark that displays the elapsed time for the entire process. This helps you understand how long it took to process the document and find similar words.
-
-<br/>
-
-> [!NOTE]
-> This project was developed as a programming assignment and serves as an educational resource for working.
